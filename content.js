@@ -179,6 +179,14 @@ function attemptAutoLogin() {
       return;
     }
 
+    // Attach click listener for manual clicks to authorize the account selector
+    const googleBtn = findGoogleLoginButton();
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        chrome.storage.local.set({ google_login_initiated: Date.now() });
+      });
+    }
+
     // We are on the login page. Check Google login first flow.
     if (tryGoogleFirst) {
       const googleState = sessionStorage.getItem('hrms_google_login_state');
@@ -194,7 +202,10 @@ function attemptAutoLogin() {
           if (googleBtn) {
             clearInterval(interval);
             console.log("HRMS Auto Login: Clicking Google Login Button.");
-            googleBtn.click();
+            // Set timestamp to authorize google account selector click
+            chrome.storage.local.set({ google_login_initiated: Date.now() }, () => {
+              googleBtn.click();
+            });
           }
           attempts++;
           if (attempts >= 25) { // 5 seconds timeout

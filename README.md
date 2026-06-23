@@ -11,19 +11,28 @@ A Manifest V3 Google Chrome Extension designed to automate the authentication an
 5. **Auto Mark Present**: Automatically clicks the "Mark Present" check-in button once you successfully land on the employee dashboard.
 6. **Configuration Panel**: An elegant, glassmorphic settings popup to toggle features (Try Google First, Auto Fill, Auto Submit, Auto Mark Present) and update credentials.
 
-## Files Included
+---
 
-* `manifest.json` - Configuration and permissions mapping.
-* `background.js` - Service worker handling browser startup/installation actions.
-* `content.js` - Portal page automation script (autofills credentials, handles warning banner).
-* `google_content.js` - Account chooser page automation script.
-* `popup.html` & `popup.js` - Polished user settings panel.
+## 🚀 Easy Installation Guide (Step-by-Step)
 
-## Installation (Local Developer Mode)
+Follow these simple steps to install and start using the extension:
 
-1. Clone or download this repository to your local machine.
-2. Open Google Chrome and navigate to `chrome://extensions/`.
-3. Enable **Developer mode** using the toggle switch in the top-right corner.
-4. Click the **Load unpacked** button in the top-left corner.
-5. Select the folder containing these files.
-6. Pin the extension to your toolbar, click the icon, configure your credentials/preferences, and save.
+### Step 1: Download the Extension Files
+1. Go to the GitHub repository page: [HRMS-Attendence-Google-Chrome-Extension](https://github.com/Ankulraja/HRMS-Attendence-Google-Chrome-Extension).
+2. Click the green **Code** button at the top right of the file list.
+3. Click **Download ZIP** from the dropdown menu.
+4. Locate the downloaded `.zip` file on your computer and extract/unzip it to a folder.
+
+### Step 2: Install the Extension in Google Chrome
+1. Open Google Chrome.
+2. Navigate to **`chrome://extensions/`** by typing it in the address bar and pressing Enter.
+3. Enable **Developer mode** by turning on the toggle switch in the top-right corner of the page.
+4. Click the **Load unpacked** button in the top-left corner of the page.
+5. In the file picker window, select the folder you extracted in Step 1 (the folder that contains `manifest.json`).
+
+### Step 3: Configure and Use
+1. Click the **Extensions** icon (looks like a puzzle piece 🧩) in the top-right corner of the Chrome toolbar.
+2. Find **HRMS Auto Login** and click the **Pin** icon next to it so it stays visible on your toolbar.
+3. Click the extension icon (the square with the letter **S**) to open the popup.
+4. Enter your username (Google email) and password, toggle your desired features, and click **Save Configurations**.
+5. Restart your browser or open a new window to watch the auto-login in action!

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "HRMS Auto Login",
-  "version": "5.0.0",
+  "version": "8.0.0",
   "description": "Automatically logs into the Savvy HRMS portal using saved credentials.",
   "permissions": [
     "storage"
@@ -11,8 +11,18 @@
     "*://*.savvyhrms.co.in/*",
     "https://accounts.google.com/*"
   ],
+  "icons": {
+    "16": "logo.png",
+    "48": "logo.png",
+    "128": "logo.png"
+  },
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "logo.png",
+      "48": "logo.png",
+      "128": "logo.png"
+    }
   },
   "background": {
     "service_worker": "background.js"

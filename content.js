@@ -128,7 +128,7 @@ function handleFallback(usernameVal, passwordVal, isAutoSubmit, isGoogleFailure)
 function attemptMarkPresent() {
   chrome.storage.local.get(['autoMarkPresent', 'enabled', 'wfhDays'], (data) => {
     const isEnabled = data.enabled !== false;
-    const autoMarkPresent = data.autoMarkPresent !== false;
+    const autoMarkPresent = data.autoMarkPresent === true;
     const wfhDays = data.wfhDays || [1, 2, 3, 4, 5];
 
     if (!isEnabled || !autoMarkPresent) {

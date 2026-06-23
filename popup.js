@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     enabledInput.checked = data.enabled !== false;
     tryGoogleFirstInput.checked = data.tryGoogleFirst !== false;
     autoSubmitInput.checked = data.autoSubmit === true;
-    autoMarkPresentInput.checked = data.autoMarkPresent !== false;
+    autoMarkPresentInput.checked = data.autoMarkPresent === true;
     
     // Default to Monday-Friday if not defined
     const wfhDays = data.wfhDays || [1, 2, 3, 4, 5];

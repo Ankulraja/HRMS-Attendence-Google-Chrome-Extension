@@ -7,12 +7,22 @@ document.addEventListener('DOMContentLoaded', async () => {
   const autoSubmitInput = document.getElementById('autoSubmit');
   const tryGoogleFirstInput = document.getElementById('tryGoogleFirst');
   const autoMarkPresentInput = document.getElementById('autoMarkPresent');
+  const wfhDaysCheckboxes = document.querySelectorAll('.day-checkbox');
   const saveBtn = document.getElementById('btnSave');
   const statusMsg = document.getElementById('statusMsg');
 
+  function updateSaveButtonState() {
+    const hasSelection = Array.from(wfhDaysCheckboxes).some(cb => cb.checked);
+    saveBtn.disabled = !hasSelection;
+  }
+
+  wfhDaysCheckboxes.forEach(cb => {
+    cb.addEventListener('change', updateSaveButtonState);
+  });
+
   // Load saved settings on popup load
   try {
-    const data = await chrome.storage.local.get(['username', 'password', 'enabled', 'autoSubmit', 'tryGoogleFirst', 'autoMarkPresent']);
+    const data = await chrome.storage.local.get(['username', 'password', 'enabled', 'autoSubmit', 'tryGoogleFirst', 'autoMarkPresent', 'wfhDays']);
     
     if (data.username) {
       usernameInput.value = data.username;
@@ -26,6 +36,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     tryGoogleFirstInput.checked = data.tryGoogleFirst !== false;
     autoSubmitInput.checked = data.autoSubmit === true;
     autoMarkPresentInput.checked = data.autoMarkPresent !== false;
+    
+    // Default to Monday-Friday if not defined
+    const wfhDays = data.wfhDays || [1, 2, 3, 4, 5];
+    wfhDaysCheckboxes.forEach(cb => {
+      cb.checked = wfhDays.includes(parseInt(cb.value));
+    });
+    
+    updateSaveButtonState();
   } catch (err) {
     console.error("HRMS Auto Login: Error retrieving stored settings:", err);
   }
@@ -39,6 +57,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     const autoSubmit = autoSubmitInput.checked;
     const autoMarkPresent = autoMarkPresentInput.checked;
 
+    const wfhDays = Array.from(wfhDaysCheckboxes)
+      .filter(cb => cb.checked)
+      .map(cb => parseInt(cb.value));
+
     try {
       await chrome.storage.local.set({
         username,
@@ -46,7 +68,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         enabled,
         tryGoogleFirst,
         autoSubmit,
-        autoMarkPresent
+        autoMarkPresent,
+        wfhDays
       });
 
       // Show animated success message

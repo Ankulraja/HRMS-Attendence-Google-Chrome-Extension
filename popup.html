@@ -223,6 +223,14 @@
       transform: translateY(0.5px);
     }
 
+    .btn-save:disabled {
+      background: #334155;
+      color: #94a3b8;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
     .status-msg {
       text-align: center;
       font-size: 11px;
@@ -248,6 +256,65 @@
       padding: 10px 12px;
       margin-bottom: 16px;
     }
+
+    /* WFH Days Styles */
+    .wfh-days-container {
+      margin-bottom: 20px;
+    }
+    
+    .wfh-days-header {
+      font-size: 11px;
+      font-weight: 600;
+      color: #64748b;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .days-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+    
+    .day-pill {
+      position: relative;
+    }
+    
+    .day-pill input {
+      position: absolute;
+      opacity: 0;
+      cursor: pointer;
+      height: 0;
+      width: 0;
+    }
+    
+    .day-pill-label {
+      display: block;
+      padding: 6px 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      font-size: 11px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+    
+    .day-pill input:checked ~ .day-pill-label {
+      background: rgba(99, 102, 241, 0.2);
+      color: #818cf8;
+      border-color: #6366f1;
+    }
+    
+    .day-pill input:hover ~ .day-pill-label {
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    .day-pill input:checked:hover ~ .day-pill-label {
+      background: rgba(99, 102, 241, 0.3);
+    }
   </style>
 </head>
 <body>
@@ -257,14 +324,29 @@
         <img src="logo.png" alt="Logo" style="width: 28px; height: 28px; border-radius: 6px; object-fit: cover; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3);">
         <h1>HRMS Auto Login</h1>
       </div>
-      <span class="badge">v11.0</span>
+      <span class="badge">v11.2</span>
     </header>
 
-    <div class="info-box">
-      Attempts Google Sign-in automatically first. If that fails, it will automatically log in with the credentials configured below.
-    </div>
-
     <div class="form">
+      <div class="wfh-days-container" id="wfhDaysContainer" style="margin-bottom: 24px;">
+        <div class="wfh-days-header">
+          Work From Home Days <span style="color: #ef4444; margin-left: 4px;">*</span>
+        </div>
+        <div class="days-grid">
+          <label class="day-pill"><input type="checkbox" value="1" class="day-checkbox"><span class="day-pill-label">Mon</span></label>
+          <label class="day-pill"><input type="checkbox" value="2" class="day-checkbox"><span class="day-pill-label">Tue</span></label>
+          <label class="day-pill"><input type="checkbox" value="3" class="day-checkbox"><span class="day-pill-label">Wed</span></label>
+          <label class="day-pill"><input type="checkbox" value="4" class="day-checkbox"><span class="day-pill-label">Thu</span></label>
+          <label class="day-pill"><input type="checkbox" value="5" class="day-checkbox"><span class="day-pill-label">Fri</span></label>
+          <label class="day-pill"><input type="checkbox" value="6" class="day-checkbox"><span class="day-pill-label">Sat</span></label>
+          <label class="day-pill"><input type="checkbox" value="0" class="day-checkbox"><span class="day-pill-label">Sun</span></label>
+        </div>
+      </div>
+
+      <div class="info-box">
+        Optional: If you want, you can fill in your HRMS details below so we can log you in directly. Your password is secure and only stored locally on your system.
+      </div>
+
       <div class="form-group">
         <label for="username">Username / Employee ID</label>
         <div class="input-wrapper">

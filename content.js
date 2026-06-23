@@ -126,16 +126,23 @@ function handleFallback(usernameVal, passwordVal, isAutoSubmit, isGoogleFailure)
 }
 
 function attemptMarkPresent() {
-  chrome.storage.local.get(['autoMarkPresent', 'enabled'], (data) => {
+  chrome.storage.local.get(['autoMarkPresent', 'enabled', 'wfhDays'], (data) => {
     const isEnabled = data.enabled !== false;
     const autoMarkPresent = data.autoMarkPresent !== false;
+    const wfhDays = data.wfhDays || [1, 2, 3, 4, 5];
 
     if (!isEnabled || !autoMarkPresent) {
       console.log("HRMS Auto Login: Auto Mark Present is disabled or extension is disabled.");
       return;
     }
 
-    console.log("HRMS Auto Login: Auto Mark Present enabled. Checking for button...");
+    const currentDay = new Date().getDay();
+    if (!wfhDays.includes(currentDay)) {
+      console.log(`HRMS Auto Login: Today (day ${currentDay}) is not a configured WFH day. Skipping Auto Mark Present.`);
+      return;
+    }
+
+    console.log("HRMS Auto Login: Auto Mark Present enabled and today is a WFH day. Checking for button...");
 
     let attempts = 0;
     const maxAttempts = 50; // 10 seconds total

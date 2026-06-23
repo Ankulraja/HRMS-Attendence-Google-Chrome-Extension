@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "HRMS Auto Login",
-  "version": "11.0.0",
+  "version": "11.2.0",
   "description": "Automatically logs into the Savvy HRMS portal using saved credentials.",
   "permissions": [
     "storage"

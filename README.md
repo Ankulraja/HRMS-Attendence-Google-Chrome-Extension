@@ -24,26 +24,11 @@ graph TD
 
 ## 🔄 How the Automation Works
 
-The extension works automatically while keeping your Google Sign-in on other websites completely secure using a 30-second handshake protocol:
+The extension works automatically while securely managing your sign-in process. Here is the step-by-step flow:
 
-```mermaid
-flowchart TD
-    Start["🚀 Chrome Opens / Startup"] --> OpenPortal["🌐 Opens Savvy HRMS Login Page"]
-    OpenPortal --> ClickGoogle["🔘 Auto Clicks 'Login with Google'"]
-    ClickGoogle --> Handshake["🔑 Sets 30s Secure Handshake Flag"]
-    Handshake --> RedirectGoogle["🖥️ Redirects to accounts.google.com"]
-
-    RedirectGoogle --> Choice{Chooser Screen?}
-    Choice -- Yes --> CheckHandshake{Handshake Valid?}
-    Choice -- No --> Dashboard
-
-    CheckHandshake -- Yes < 30s --> AutoClickEmail["✅ Auto Selects *@indiamart.com Account"]
-    CheckHandshake -- No / Expired --> UserManualChoice["👤 User Selects Account Manually"]
-
-    AutoClickEmail --> Dashboard["📈 Redirects to HRMS Dashboard"]
-    Dashboard --> ClickPresent["🎯 Auto Clicks 'Mark Present' Check-in"]
-
-    style AutoClickEmail fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-    style ClickPresent fill:#10b981,stroke:#059669,stroke-width:2px,color:#fff
-    style UserManualChoice fill:#f59e0b,stroke:#d97706,stroke-width:2px,color:#fff
-```
+1. **Smart Startup Check**: When Chrome opens, the extension checks your configured Work From Home (WFH) days. If today is a WFH day, it proceeds to open the Savvy HRMS login page. If not, it stays silent.
+2. **Auto Login Attempt**: Once the HRMS portal loads, the extension attempts to click the "Login with Google" button.
+3. **Secure Handshake Protocol**: A 30-second secure handshake flag is set before redirecting to `accounts.google.com`. This ensures it only auto-selects your work email if the login was initiated by the extension.
+4. **Google Account Selection**: If the handshake is valid (within 30 seconds) and you are presented with the account chooser, it automatically selects your work email account.
+5. **Fallback Mechanism**: If the Google login fails or times out, the extension will fall back to using your configured Username and Password (if provided in the settings).
+6. **Automatic Check-in**: After successfully landing on the HRMS Dashboard, the extension automatically finds and clicks the "Mark Present" button.

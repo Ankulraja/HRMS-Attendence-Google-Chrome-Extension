@@ -4,6 +4,14 @@ A Manifest V3 Google Chrome Extension designed to automate the authentication an
 
 ---
 
+## 🎥 Video Demonstration
+
+[![Watch the extension in action](https://placehold.co/800x400/2563eb/white?text=Click+to+Play+Video+Demonstration&font=roboto)](https://drive.google.com/file/d/1Mb7WUleHGH5CBph7HuzaohUfooFNvpg4/view?usp=sharing)
+
+*(Click the image above to watch the full video demonstration on Google Drive)*
+
+---
+
 ## 🛠️ Step-by-Step Installation
 
 ```mermaid

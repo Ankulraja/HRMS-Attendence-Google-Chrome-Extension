@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WFH Attendance Reminder</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="reminder.css">
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="warning-badge">
+        <span class="warning-icon">⚠️</span>
+        <span>WFH Attendance Reminder</span>
+      </div>
+    </div>
+    <div class="content">
+      <h1 class="title">Action Required</h1>
+      <p class="description">Today is configured as your <strong>Work From Home (WFH)</strong> day.</p>
+      <p class="warning-message">It looks like you have not marked your attendance on the Savvy HRMS portal yet. Please complete it before continuing your work.</p>
+    </div>
+    <div class="actions">
+      <button id="btnOpenHRMS" class="btn btn-primary">Open HRMS</button>
+      <button id="btnSkipToday" class="btn btn-secondary">Skip Today</button>
+    </div>
+  </div>
+  <script src="reminder.js"></script>
+</body>
+</html>

@@ -1,6 +1,23 @@
 // HRMS Auto Login Content Script
 console.log("HRMS Auto Login content script loaded.");
 
+function getTodayDateStringIST() {
+  const now = new Date();
+  const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const istDate = new Date(istString);
+  const year = istDate.getFullYear();
+  const month = String(istDate.getMonth() + 1).padStart(2, '0');
+  const day = String(istDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getISTDayOfWeek() {
+  const now = new Date();
+  const istString = now.toLocaleString("en-US", { timeZone: "Asia/Kolkata" });
+  const istDate = new Date(istString);
+  return istDate.getDay();
+}
+
 function setInputValue(element, value) {
   element.value = value;
   element.dispatchEvent(new Event('input', { bubbles: true }));
@@ -125,24 +142,26 @@ function handleFallback(usernameVal, passwordVal, isAutoSubmit, isGoogleFailure)
   }, 200);
 }
 
-function attemptMarkPresent() {
+function setupMarkPresentDetection() {
   chrome.storage.local.get(['autoMarkPresent', 'enabled', 'wfhDays'], (data) => {
     const isEnabled = data.enabled !== false;
+    if (!isEnabled) {
+      console.log("HRMS Auto Login: Extension is disabled. Skipping mark present detection.");
+      return;
+    }
+
     const autoMarkPresent = data.autoMarkPresent === true;
     const wfhDays = data.wfhDays || [1, 2, 3, 4, 5];
+    
+    const todayDateString = getTodayDateStringIST();
+    const currentDayIST = getISTDayOfWeek();
 
-    if (!isEnabled || !autoMarkPresent) {
-      console.log("HRMS Auto Login: Auto Mark Present is disabled or extension is disabled.");
+    if (!wfhDays.includes(currentDayIST)) {
+      console.log(`HRMS Auto Login: Today (IST day ${currentDayIST}) is not a configured WFH day. Skipping mark present.`);
       return;
     }
 
-    const currentDay = new Date().getDay();
-    if (!wfhDays.includes(currentDay)) {
-      console.log(`HRMS Auto Login: Today (day ${currentDay}) is not a configured WFH day. Skipping Auto Mark Present.`);
-      return;
-    }
-
-    console.log("HRMS Auto Login: Auto Mark Present enabled and today is a WFH day. Checking for button...");
+    console.log("HRMS Auto Login: Polling for 'Mark Present' button to set up detection...");
 
     let attempts = 0;
     const maxAttempts = 50; // 10 seconds total
@@ -150,8 +169,22 @@ function attemptMarkPresent() {
       const markPresentBtn = document.querySelector('#btnmarkpresent');
       if (markPresentBtn) {
         clearInterval(interval);
-        console.log("HRMS Auto Login: Clicking 'Mark Present' button...");
-        markPresentBtn.click();
+        console.log("HRMS Auto Login: 'Mark Present' button (#btnmarkpresent) found. Attaching click listener...");
+        
+        // Attach listener for both manual and automatic clicks
+        markPresentBtn.addEventListener('click', () => {
+          chrome.storage.local.set({ lastMarkPresentDate: todayDateString }, () => {
+            console.log("HRMS Auto Login: Mark Present clicked. lastMarkPresentDate set to:", todayDateString);
+            // Send message to background script to clear any pending alarms
+            chrome.runtime.sendMessage({ action: "attendanceMarked" });
+          });
+        });
+
+        // Trigger automatic click if enabled
+        if (autoMarkPresent) {
+          console.log("HRMS Auto Login: Auto Mark Present enabled. Clicking button automatically...");
+          markPresentBtn.click();
+        }
       }
       attempts++;
       if (attempts >= maxAttempts) {
@@ -182,7 +215,9 @@ function attemptAutoLogin() {
     if (!isLoginPage) {
       // We are logged in! Clear google login attempt state for next session
       sessionStorage.removeItem('hrms_google_login_state');
-      attemptMarkPresent();
+      
+      // Initialize Mark Present button detection and auto-click if enabled
+      setupMarkPresentDetection();
       return;
     }
 
@@ -239,6 +274,248 @@ function attemptAutoLogin() {
     }
   });
 }
+
+let activeReminderModalHost = null;
+
+function showReminderModal() {
+  console.log("HRMS Auto Login: Showing reminder modal...");
+  
+  if (activeReminderModalHost) {
+    console.log("HRMS Auto Login: Reminder modal is already open.");
+    return;
+  }
+
+  activeReminderModalHost = document.createElement('div');
+  activeReminderModalHost.id = 'hrms-reminder-modal-host';
+  activeReminderModalHost.style.position = 'fixed';
+  activeReminderModalHost.style.top = '0';
+  activeReminderModalHost.style.left = '0';
+  activeReminderModalHost.style.width = '100%';
+  activeReminderModalHost.style.height = '100%';
+  activeReminderModalHost.style.zIndex = '999999';
+  document.body.appendChild(activeReminderModalHost);
+
+  const shadow = activeReminderModalHost.attachShadow({ mode: 'open' });
+
+  const style = document.createElement('style');
+  style.textContent = `
+    * {
+      box-sizing: border-box;
+    }
+    
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(11, 15, 25, 0.85);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    
+    .overlay.show {
+      opacity: 1;
+    }
+    
+    .modal-card {
+      width: 420px;
+      height: 320px;
+      padding: 24px;
+      background: radial-gradient(circle at top left, #1e293b, #0f172a, #0b0f19);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      color: #f8fafc;
+      font-family: 'Outfit', sans-serif;
+      transform: translateY(20px);
+      transition: transform 0.3s ease;
+    }
+    
+    .overlay.show .modal-card {
+      transform: translateY(0);
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .warning-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      background: rgba(245, 158, 11, 0.1);
+      color: #fbbf24;
+      font-weight: 600;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    
+    .warning-icon {
+      font-size: 12px;
+    }
+    
+    .content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    
+    .description {
+      font-size: 14px;
+      color: #94a3b8;
+      margin: 0 0 12px 0;
+      line-height: 1.5;
+    }
+    
+    .warning-message {
+      font-size: 13px;
+      color: #cbd5e1;
+      margin: 0;
+      line-height: 1.5;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-left: 3px solid #fbbf24;
+    }
+    
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+    }
+    
+    .btn {
+      flex: 1;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      text-align: center;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1, #3b82f6);
+      color: white;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+    
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #4f46e5, #2563eb);
+      box-shadow: 0 4px 16px rgba(99, 102, 241, 0.5);
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+  `;
+  shadow.appendChild(style);
+
+  const overlay = document.createElement('div');
+  overlay.className = 'overlay';
+  overlay.innerHTML = `
+    <div class="modal-card">
+      <div class="header">
+        <div class="warning-badge">
+          <span class="warning-icon">⚠️</span>
+          <span>WFH Attendance Reminder</span>
+        </div>
+      </div>
+      <div class="content">
+        <h1 class="title">Action Required</h1>
+        <p class="description">Today is configured as your <strong>Work From Home (WFH)</strong> day.</p>
+        <p class="warning-message">It looks like you have not marked your attendance on the Savvy HRMS portal yet. Please complete it before continuing your work.</p>
+      </div>
+      <div class="actions">
+        <button id="btnOpenHRMS" class="btn btn-primary">Open HRMS</button>
+        <button id="btnSkipToday" class="btn btn-secondary">Skip Today</button>
+      </div>
+    </div>
+  `;
+  shadow.appendChild(overlay);
+
+  setTimeout(() => overlay.classList.add('show'), 50);
+
+  const btnOpenHRMS = overlay.querySelector('#btnOpenHRMS');
+  const btnSkipToday = overlay.querySelector('#btnSkipToday');
+
+  btnOpenHRMS.addEventListener('click', () => {
+    closeReminderModal();
+  });
+
+  btnSkipToday.addEventListener('click', async () => {
+    const todayDateString = getTodayDateStringIST();
+    try {
+      await chrome.storage.local.set({ skipReminderDate: todayDateString });
+      chrome.runtime.sendMessage({ action: "skipTodayFromReminder" });
+    } catch (err) {
+      console.error("HRMS Auto Login: Error skipping reminder:", err);
+    }
+    closeReminderModal();
+  });
+}
+
+function closeReminderModal() {
+  if (activeReminderModalHost) {
+    const overlay = activeReminderModalHost.shadowRoot.querySelector('.overlay');
+    if (overlay) {
+      overlay.classList.remove('show');
+      setTimeout(() => {
+        if (activeReminderModalHost) {
+          activeReminderModalHost.remove();
+          activeReminderModalHost = null;
+        }
+      }, 300);
+    } else {
+      activeReminderModalHost.remove();
+      activeReminderModalHost = null;
+    }
+  }
+}
+
+// Listen for messages from background script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.action === "showReminderModal") {
+    showReminderModal();
+    if (sendResponse) sendResponse({ success: true });
+  }
+});
 
 // Run the script check
 if (document.readyState === "complete" || document.readyState === "interactive") {

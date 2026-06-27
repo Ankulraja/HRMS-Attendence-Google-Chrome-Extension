@@ -123,9 +123,9 @@ async function checkAndTriggerAttendance() {
       console.log("[Reminder Check] Clearing any existing alarms...");
       await chrome.alarms.clear("attendance-reminder-check");
       
-      // Schedule the first reminder in 1 minute (for testing)
-      console.log("[Reminder Check] Creating reminder check alarm for 1 minute from now...");
-      chrome.alarms.create("attendance-reminder-check", { delayInMinutes: 1 });
+      // Schedule the first reminder in 10 minutes
+      console.log("[Reminder Check] Creating reminder check alarm for 10 minutes from now...");
+      chrome.alarms.create("attendance-reminder-check", { delayInMinutes: 10 });
       console.log("[Reminder Check] Alarm create() called successfully.");
 
       // Verify alarm exists immediately
@@ -250,10 +250,10 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
       // Trigger the modal or fallback tab
       triggerReminder();
 
-      // Schedule the next alarm in 1 minute if we haven't reached the limit (for testing)
+      // Schedule the next alarm in 10 minutes if we haven't reached the limit
       if (newCount < 3) {
-        console.log("[onAlarm] Scheduling next check alarm in 1 minute...");
-        chrome.alarms.create("attendance-reminder-check", { delayInMinutes: 1 });
+        console.log("[onAlarm] Scheduling next check alarm in 10 minutes...");
+        chrome.alarms.create("attendance-reminder-check", { delayInMinutes: 10 });
       } else {
         console.log("[onAlarm] Maximum reminders reached today. Skipping next alarm creation.");
       }
